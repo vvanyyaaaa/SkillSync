@@ -4,6 +4,7 @@ from src.parser import extract_text_from_pdf
 from src.preprocessing import preprocess_text
 from src.skills import extract_skills
 from src.matching import match_skills
+from src.embeddings import calculate_similarity
 
 st.title("SkillSync")
 
@@ -42,5 +43,10 @@ if st.button("Analyze"):
 
             st.subheader("Missing Skills")
             st.write(", ".join(result["missing"]) if result["missing"] else "None")
+
+            similarity_score = calculate_similarity(resume_text, job_text)
+
+            st.subheader("Resume–Job Similarity")
+            st.write(f"{similarity_score}%")
     else:
         st.warning("Please upload a resume and paste a job description.")

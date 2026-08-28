@@ -1,63 +1,35 @@
 import streamlit as st
-
+ 
 from src.parser import extract_text_from_pdf
 from src.preprocessing import preprocess_text
-
-
+from src.skills import extract_skills
+ 
 st.title("SkillSync")
-
-st.caption(
-    "Upload your resume and a target job description. "
-    "SkillSync will compare your skills with the role and highlight gaps."
-)
-
-resume = st.file_uploader(
-    "Upload your resume (PDF)",
-    type=["pdf"]
-)
-
-job_description = st.text_area(
-    "Paste the job description",
-    height=220
-)
-
-
+ 
+resume_file = st.file_uploader("Upload your resume (PDF)", type=["pdf"])
+job_description = st.text_area("Paste the job description")
+ 
 if st.button("Analyze"):
-
-    if resume is None:
-        st.warning("Please upload your resume.")
-
-    elif not job_description.strip():
-        st.warning("Please paste a job description.")
-
-    else:
+    if resume_file is not None and job_description.strip():
         try:
-            extracted_text = extract_text_from_pdf(resume)
-
-            if extracted_text:
-                st.success("Resume parsed successfully.")
-
-                cleaned_text = preprocess_text(extracted_text)
-
-                if cleaned_text:
-                    st.success("Resume text cleaned successfully.")
-
-                    st.text_area(
-                        "Cleaned resume text",
-                        cleaned_text,
-                        height=300,
-                        disabled=True
-                    )
-
-                else:
-                    st.warning(
-                        "No usable text remained after cleaning this PDF."
-                    )
-
-            else:
-                st.warning(
-                    "No text could be extracted from this PDF."
-                )
-
-        except ValueError as exc:
-            st.error(str(exc))
+            raw_resume_text = extract_text_from_pdf(resume_file)
+        except Exception:
+            st.error("Could not read this PDF. Please upload a valid PDF file.")
+        else:
+            resume_text = preprocess_text(raw_resume_text)
+            job_text = preprocess_text(job_description)
+ 
+            st.subheader("Extracted Resume Text")
+            st.write(resume_text)
+ 
+            resume_skills = extract_skills(resume_text)
+            job_skills = extract_skills(job_text)
+ 
+            st.subheader("Detected Resume Skills")
+            st.write(", ".join(resume_skills) if resume_skills else "No skills detected.")
+ 
+            st.subheader("Detected Job Skills")
+            st.write(", ".join(job_skills) if job_skills else "No skills detected.")
+    else:
+        st.warning("Please upload a resume and paste a job description.")
+ 

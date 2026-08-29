@@ -1,9 +1,14 @@
-from src.embeddings import calculate_similarity
+from src.embeddings import calculate_semantic_similarity
 
-resume = "Python SQL Pandas machine learning"
+resume = """
+I am a machine learning engineer experienced in Python and predictive modeling.
+"""
 
-job = "Graphic design photography illustration painting"
+job = """
+We need a machine learning developer with Python experience who builds predictive models.
+"""
 
-score = calculate_similarity(resume, job)
+score = calculate_semantic_similarity(resume, job)
 
-print(f"Similarity: {score}%")
+print(score)
+print(type(score))

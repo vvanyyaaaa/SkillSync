@@ -50,7 +50,6 @@ SKILLS = [
     "Machine Learning",
     "Deep Learning",
     "Natural Language Processing",
-    "NLP",
     "Computer Vision",
     "Data Structures",
     "Algorithms",
@@ -114,6 +113,10 @@ def _build_pattern(skill: str) -> re.Pattern:
 _ALIASES = {
     "Scikit-learn": ["scikit-learn", "scikit learn", "sklearn"],
     "Node.js": ["node.js", "node js", "nodejs"],
+    "Natural Language Processing": [
+        "natural language processing",
+        "nlp",
+    ],
 }
  
  

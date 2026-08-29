@@ -2,28 +2,24 @@
 embeddings.py
 
 Step 7: TF-IDF + Cosine Similarity.
+Step 8: Semantic Text Similarity using Sentence Transformers.
 
-This module estimates how textually similar a resume and a job description
-are, using classic (non-ML, non-LLM) natural language processing:
+This module estimates how similar a resume and a job description are,
+using two different approaches:
 
-- TF-IDF (Term Frequency - Inverse Document Frequency) turns each document
-  into a vector of numbers, one per word. A word gets a high score in a
-  document if it appears often in that document (term frequency) but
-  doesn't appear in most other documents (inverse document frequency).
-  This down-weights generic, common words and up-weights words that are
-  distinctive to a document.
+- calculate_similarity(): classic (non-ML, non-LLM) TF-IDF comparison.
+  It only "sees" shared vocabulary — matching words, not matching meaning.
 
-- Cosine similarity then measures how similar two vectors are by looking
-  at the angle between them, not their length. A score of 1.0 means the
-  vectors point in exactly the same direction (very similar wording),
-  and 0.0 means they share no overlapping vocabulary at all.
-
-This is purely statistical text comparison — no meaning/context awareness,
-no ML model, no embeddings API. That's a later step.
+- calculate_semantic_similarity(): compares the *meaning* of the two
+  texts using sentence embeddings from a local, free, pre-trained model
+  (all-MiniLM-L6-v2 via sentence-transformers). This can recognize that
+  "led a team of engineers" and "managed a software team" are related,
+  even though they share almost no exact words.
 """
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
 
 
 def calculate_similarity(resume_text: str, job_text: str) -> float:
@@ -48,5 +44,41 @@ def calculate_similarity(resume_text: str, job_text: str) -> float:
     # different documents, which is at position [0, 1].
     similarity_matrix = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
     similarity_score = similarity_matrix[0][0]
+
+    return round(similarity_score * 100, 2)
+
+
+# Loaded once, when this module is first imported, and reused by every
+# call to calculate_semantic_similarity() below. See the explanation
+# for why this is done at module level instead of inside the function.
+MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+
+
+def calculate_semantic_similarity(resume_text: str, job_text: str) -> float:
+    """
+    Compare a resume and a job description using sentence embeddings.
+
+    Unlike calculate_similarity() (which only compares matching words),
+    this compares *meaning*: two sentences phrased very differently can
+    still score highly here if they mean similar things.
+
+    Returns a similarity score from 0.0 to 100.0 (a percentage, rounded to
+    2 decimal places). Returns 0.0 if either input is empty.
+    """
+    if not resume_text or not job_text:
+        return 0.0
+
+    # encode() turns each text into a single fixed-length vector (an
+    # "embedding") that captures its overall meaning.
+    resume_embedding = MODEL.encode(resume_text)
+    job_embedding = MODEL.encode(job_text)
+
+    # cosine_similarity compares the two embedding vectors
+# and returns their cosine similarity.
+    # containing their cosine similarity.
+    similarity_score = cosine_similarity(
+    [resume_embedding],
+    [job_embedding]
+)[0][0]
 
     return round(similarity_score * 100, 2)

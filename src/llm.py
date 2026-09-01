@@ -1,4 +1,5 @@
 import os
+import streamlit as st
 
 from google import genai
 
@@ -16,6 +17,12 @@ def analyze_candidate(
 ) -> str:
 
     api_key = os.getenv("GEMINI_API_KEY")
+
+    if not api_key:
+        try:
+            api_key = st.secrets["GEMINI_API_KEY"]
+        except Exception:
+            api_key = None
 
     if not api_key:
         return "Gemini API key is not configured."

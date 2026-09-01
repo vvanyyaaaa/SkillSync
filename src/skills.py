@@ -154,3 +154,98 @@ def extract_skills(text: str) -> list[str]:
             found.append(skill.lower())
  
     return found
+# Skill categories used by the scoring system
+
+SKILL_CATEGORIES = {
+    "Programming Languages": [
+        "python",
+        "c",
+        "c++",
+        "c#",
+        "java",
+        "javascript",
+        "typescript",
+        "sql",
+        "html",
+        "css",
+    ],
+
+    "Data/ML": [
+        "pandas",
+        "numpy",
+        "matplotlib",
+        "seaborn",
+        "scikit-learn",
+        "machine learning",
+        "deep learning",
+    ],
+
+    "Frameworks": [
+        "react",
+        "node.js",
+        "fastapi",
+        "flask",
+        "streamlit",
+        "rest api",
+    ],
+
+    "Cloud/DevOps": [
+        "git",
+        "github",
+        "docker",
+        "linux",
+        "aws",
+        "azure",
+        "gcp",
+    ],
+
+    "CS Fundamentals": [
+        "data structures",
+        "algorithms",
+        "oop",
+    ],
+
+    "AI/LLM": [
+        "tensorflow",
+        "pytorch",
+        "natural language processing",
+        "computer vision",
+        "generative ai",
+        "llm",
+        "prompt engineering",
+        "gemini api",
+    ],
+}
+
+
+def get_category(skill: str) -> str:
+    """
+    Return the category that a skill belongs to.
+    Returns 'Other' if the skill isn't in our category list.
+    """
+
+    for category, skills in SKILL_CATEGORIES.items():
+        if skill.lower() in skills:
+            return category
+
+    return "Other"
+
+def categorize_skills(skills: list[str]) -> dict[str, list[str]]:
+    """
+    Group detected skills into their respective categories.
+
+    Returns a dictionary where each key is a category and
+    the value is the list of skills belonging to that category.
+    """
+
+    categorized = {}
+
+    for skill in skills:
+        category = get_category(skill)
+
+        if category not in categorized:
+            categorized[category] = []
+
+        categorized[category].append(skill)
+
+    return categorized

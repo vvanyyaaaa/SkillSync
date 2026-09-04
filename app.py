@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from src.recommendations import generate_recommendations
 from src.scoring import (
@@ -37,284 +38,315 @@ st.markdown(
     <style>
 
     /* -------------------------------------------------
-       GLOBAL PAGE
+       GOOGLE FONT — SAIRA
     ------------------------------------------------- */
+    @import url('https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap');
+
+    html, body, .stApp, .stApp *, 
+    button, input, textarea, select, [data-baseweb="select"],
+    .main-title, .subtitle, .section-title, .hero-badge,
+    .hero-description, .score-number, .score-label,
+    .metric-card, .metric-label, .metric-number,
+    .category-title, .skill-text, .skill-chip,
+    .recommendation-card, .recommendation-title,
+    .recommendation-text, .improvement-card,
+    .improvement-title, .improvement-text,
+    .learning-card, .skill-name, .skill-description,
+    .job-caption, .history-card, .history-score,
+    .history-meta, .input-card-title, .input-card-text {
+        font-family: 'Saira', sans-serif !important;
+    }
+
+    h1, h2, h3, h4, h5, h6,
+    .main-title, .section-title, .score-number,
+    .metric-number, .hero-badge {
+        font-family: 'Saira', sans-serif !important;
+        font-weight: 700 !important;
+    }
 
     .stApp {
         overflow-x: hidden;
     }
 
-    /* Use the new font only for our custom text */
-    .main-title,
-    .subtitle,
-    .section-title,
-    .score-number,
-    .metric-card,
-    .metric-label,
-    .metric-number,
-    .category-title,
-    .skill-text,
-    .recommendation-card,
-    .recommendation-title,
-    .recommendation-text,
-    .improvement-card,
-    .improvement-title,
-    .improvement-text,
-    .learning-card,
-    .skill-name,
-    .skill-description,
-    .job-caption {
-        font-family: "Segoe UI", Arial, sans-serif !important;
+    /* -------------------------------------------------
+       HERO / LANDING HEADER
+    ------------------------------------------------- */
+    .hero {
+        text-align: center;
+        padding: 28px 20px 24px;
+        margin: 4px auto 28px;
+        max-width: 950px;
     }
 
-
-    /* -------------------------------------------------
-       HEADER
-    ------------------------------------------------- */
+    .hero-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(99, 102, 241, 0.12);
+        border: 1px solid rgba(99, 102, 241, 0.28);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 14px;
+    }
 
     .main-title {
-        font-size: 42px;
-        font-weight: 600;
-        letter-spacing: -1px;
-        text-align: center;
-        margin-top: 10px;
-        margin-bottom: 4px;
+        font-size: clamp(42px, 6vw, 68px);
+        line-height: 1;
+        letter-spacing: -1.5px;
+        margin: 0 0 12px;
+    }
+
+    .hero-description {
+        max-width: 680px;
+        margin: 0 auto;
+        color: rgba(255,255,255,.62);
+        font-size: 17px;
+        line-height: 1.6;
     }
 
     .subtitle {
         text-align: center;
-        color: rgba(255, 255, 255, 0.55);
-        font-size: 15px;
-        font-weight: 400;
-        margin-bottom: 32px;
-    }
-
-
-    /* -------------------------------------------------
-       JOB TITLE
-    ------------------------------------------------- */
-
-    .job-caption {
-        text-align: center;
-        color: rgba(255, 255, 255, 0.60);
+        color: rgba(255,255,255,.48);
         font-size: 14px;
-        margin-top: 5px;
-        margin-bottom: 15px;
+        margin-top: 10px;
     }
-
 
     /* -------------------------------------------------
-       OVERALL SCORE
+       INPUT CARDS
     ------------------------------------------------- */
-
-    .score-box {
-        width: 55%;
-        max-width: 650px;
-        min-width: 280px;
-        margin: 25px auto 35px auto;
-        padding: 30px 20px;
-        border-radius: 20px;
-        text-align: center;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        box-sizing: border-box;
+    .input-card {
+        padding: 22px;
+        border-radius: 18px;
+        background: rgba(128,128,128,.07);
+        border: 1px solid rgba(128,128,128,.16);
+        min-height: 120px;
+        margin-bottom: 8px;
     }
 
-    .score-number {
-        font-size: 50px;
-        font-weight: 600;
-        letter-spacing: -1px;
+    .input-card-title {
+        font-size: 19px;
+        font-weight: 700;
+        margin-bottom: 5px;
     }
 
+    .input-card-text {
+        font-size: 13px;
+        color: rgba(255,255,255,.52);
+        line-height: 1.5;
+    }
+
+    .input-card + div {
+        margin-top: 0;
+    }
 
     /* -------------------------------------------------
        SECTION HEADINGS
     ------------------------------------------------- */
-
     .section-title {
-        text-align: center;
-        font-size: 22px;
-        font-weight: 500;
-        letter-spacing: -0.2px;
-        margin-top: 30px;
+        font-size: 25px;
+        letter-spacing: -.3px;
+        margin-top: 34px;
         margin-bottom: 16px;
     }
 
+    .section-subtitle {
+        color: rgba(255,255,255,.52);
+        font-size: 14px;
+        margin-top: -9px;
+        margin-bottom: 18px;
+    }
 
     /* -------------------------------------------------
-       SKILL MATCH CARDS
+       SCORE DASHBOARD
     ------------------------------------------------- */
+    .score-box {
+        width: 100%;
+        margin: 12px auto 22px;
+        padding: 28px 20px;
+        border-radius: 22px;
+        text-align: center;
+        box-sizing: border-box;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 10px 35px rgba(0,0,0,.12);
+    }
 
+    .score-label {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: rgba(255,255,255,.55);
+        margin-bottom: 3px;
+    }
+
+    .score-number {
+        font-size: 58px;
+        line-height: 1.05;
+        letter-spacing: -1px;
+    }
+
+    .job-caption {
+        text-align: center;
+        color: rgba(255,255,255,.60);
+        font-size: 14px;
+        margin: 4px 0 20px;
+    }
+
+    /* -------------------------------------------------
+       METRIC CARDS
+    ------------------------------------------------- */
     .metric-card {
         padding: 22px 15px;
-        border-radius: 16px;
-        background: rgba(128, 128, 128, 0.07);
-        border: 1px solid rgba(128, 128, 128, 0.12);
+        border-radius: 17px;
+        background: rgba(128,128,128,.07);
+        border: 1px solid rgba(128,128,128,.13);
         text-align: center;
-        margin-bottom: 10px;
+        min-height: 105px;
         box-sizing: border-box;
     }
 
     .metric-label {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.58);
-        font-weight: 400;
+        font-size: 13px;
+        color: rgba(255,255,255,.55);
         margin-bottom: 7px;
     }
 
     .metric-number {
         font-size: 31px;
+        line-height: 1;
+    }
+
+    /* -------------------------------------------------
+       SKILL CHIPS
+    ------------------------------------------------- */
+    .skill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 20px;
+    }
+
+    .skill-chip {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 13px;
         font-weight: 600;
     }
 
+    .matched-chip {
+        background: rgba(34,197,94,.12);
+        border: 1px solid rgba(34,197,94,.28);
+    }
 
-    /* -------------------------------------------------
-       MATCHED SKILLS
-    ------------------------------------------------- */
+    .missing-chip {
+        background: rgba(239,68,68,.10);
+        border: 1px solid rgba(239,68,68,.25);
+    }
 
     .category-title {
-        text-align: center;
-        font-size: 14px;
-        font-weight: 600;
-        margin-top: 13px;
-        margin-bottom: 4px;
+        font-size: 15px;
+        font-weight: 650;
+        margin: 12px 0 7px;
     }
 
     .skill-text {
-        text-align: center;
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.58);
+        color: rgba(255,255,255,.58);
         line-height: 1.6;
-        margin-bottom: 8px;
     }
-
 
     /* -------------------------------------------------
-       RECOMMENDATION CARDS
+       CONTENT CARDS
     ------------------------------------------------- */
-
-    .recommendation-card {
-        width: 82%;
-        max-width: 800px;
-        margin: 10px auto;
-        padding: 16px 20px;
-        border-radius: 14px;
-        background: rgba(128, 128, 128, 0.07);
-        border: 1px solid rgba(128, 128, 128, 0.12);
-        text-align: center;
-        box-sizing: border-box;
-    }
-
-    .recommendation-title {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .recommendation-text {
-        font-size: 13px;
-        line-height: 1.55;
-        color: rgba(255, 255, 255, 0.58);
-    }
-
-
-    /* -------------------------------------------------
-       IMPROVEMENT CARDS
-    ------------------------------------------------- */
-
-    .improvement-card {
-        width: 82%;
-        max-width: 800px;
-        margin: 10px auto;
-        padding: 15px 20px;
-        border-radius: 14px;
-        background: rgba(128, 128, 128, 0.07);
-        border: 1px solid rgba(128, 128, 128, 0.12);
-        text-align: center;
-        box-sizing: border-box;
-    }
-
-    .improvement-title {
-        font-size: 15px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .improvement-text {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.58);
-        line-height: 1.55;
-    }
-
-
-    /* -------------------------------------------------
-       LEARNING CARDS
-    ------------------------------------------------- */
-
+    .recommendation-card,
+    .improvement-card,
     .learning-card {
-        width: 82%;
-        max-width: 800px;
-        margin: 10px auto;
-        padding: 15px 20px;
-        border-radius: 14px;
-        background: rgba(128, 128, 128, 0.07);
-        border: 1px solid rgba(128, 128, 128, 0.12);
-        text-align: center;
+        width: 100%;
+        margin: 9px 0;
+        padding: 17px 20px;
+        border-radius: 15px;
+        background: rgba(128,128,128,.07);
+        border: 1px solid rgba(128,128,128,.12);
         box-sizing: border-box;
     }
 
+    .recommendation-title,
+    .improvement-title,
     .skill-name {
-        font-size: 15px;
-        font-weight: 600;
+        font-size: 16px;
+        font-weight: 650;
         margin-bottom: 5px;
     }
 
+    .recommendation-text,
+    .improvement-text,
     .skill-description {
         font-size: 13px;
-        color: rgba(255, 255, 255, 0.58);
         line-height: 1.55;
+        color: rgba(255,255,255,.58);
     }
 
+    /* -------------------------------------------------
+       HISTORY
+    ------------------------------------------------- */
+    .history-card {
+        padding: 15px 17px;
+        border-radius: 14px;
+        background: rgba(128,128,128,.07);
+        border: 1px solid rgba(128,128,128,.12);
+        margin: 8px 0;
+    }
+
+    .history-score {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .history-meta {
+        font-size: 12px;
+        color: rgba(255,255,255,.52);
+        line-height: 1.5;
+    }
 
     /* -------------------------------------------------
-       ANALYZE BUTTON
+       BUTTONS / UPLOADER
     ------------------------------------------------- */
-
     div.stButton {
         display: flex;
         justify-content: center;
     }
 
     div.stButton > button {
-        border-radius: 10px;
-        padding: 8px 25px;
-        font-weight: 500;
+        border-radius: 11px;
+        padding: 10px 28px;
+        font-family: 'Saira', sans-serif !important;
+        font-weight: 650;
+        min-height: 44px;
     }
 
+    [data-testid="stFileUploader"] {
+        border-radius: 15px;
+    }
 
     /* -------------------------------------------------
        RESPONSIVE
     ------------------------------------------------- */
-
     @media (max-width: 768px) {
-
-        .score-box {
-            width: 90%;
+        .hero {
+            padding-top: 15px;
         }
 
-        .recommendation-card,
-        .improvement-card,
-        .learning-card {
-            width: 95%;
-        }
-
-        .main-title {
-            font-size: 34px;
+        .hero-description {
+            font-size: 15px;
         }
 
         .section-title {
-            font-size: 20px;
+            font-size: 22px;
+        }
+
+        .score-number {
+            font-size: 48px;
         }
     }
 
@@ -325,18 +357,30 @@ st.markdown(
 
 
 # ---------------------------------------------------------
+# ANALYSIS HISTORY
+# ---------------------------------------------------------
+
+if "analysis_history" not in st.session_state:
+    st.session_state.analysis_history = []
+
+
+# ---------------------------------------------------------
 # HEADER
 # ---------------------------------------------------------
 
 st.markdown(
-    '<div class="main-title">SkillSync</div>',
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    '<div class="subtitle">'
-    'AI-powered resume and job description matching'
-    '</div>',
+    """
+    <div class="hero">
+        <div class="hero-badge">✦ AI-POWERED CAREER MATCHING</div>
+        <div class="main-title">SkillSync</div>
+        <div class="hero-description">
+            Know the gap. Build the skill. Get the job.
+            <br>
+            Analyze how closely your resume matches any job description
+            and discover exactly what to improve.
+        </div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -345,22 +389,53 @@ st.markdown(
 # INPUTS
 # ---------------------------------------------------------
 
-resume_file = st.file_uploader(
-    "Upload your resume",
-    type=["pdf"],
-)
+input_col1, input_col2 = st.columns(2, gap="large")
 
-job_description = st.text_area(
-    "Paste the job description",
-    height=180,
-)
+with input_col1:
+    st.markdown(
+        """
+        <div class="input-card">
+            <div class="input-card-title">📄 Your Resume</div>
+            <div class="input-card-text">
+                Upload your latest resume in PDF format. SkillSync will
+                extract your technical skills and experience.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    resume_file = st.file_uploader(
+        "Upload your resume",
+        type=["pdf"],
+        label_visibility="collapsed",
+    )
+
+with input_col2:
+    st.markdown(
+        """
+        <div class="input-card">
+            <div class="input-card-title">💼 Job Description</div>
+            <div class="input-card-text">
+                Paste the complete job description to compare its
+                requirements with your resume.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    job_description = st.text_area(
+        "Paste the job description",
+        height=180,
+        label_visibility="collapsed",
+        placeholder="Paste the job description here...",
+    )
 
 
 # ---------------------------------------------------------
 # ANALYZE BUTTON
 # ---------------------------------------------------------
 
-if st.button("Analyze Resume", type="primary"):
+if st.button("✦ Analyze My Match", type="primary"):
 
     if resume_file is None or not job_description.strip():
 
@@ -416,22 +491,14 @@ if st.button("Analyze Resume", type="primary"):
             resume_categories = categorize_skills(resume_skills)
 
             # -------------------------------------------------
-            # SKILL MATCHING
+            # CALCULATE ALL SCORES BEFORE DISPLAYING RESULTS
             # -------------------------------------------------
-
-            result = match_skills(
-                resume_skills,
-                job_skills,
-            )
+            result = match_skills(resume_skills, job_skills)
 
             weighted_score = calculate_weighted_skill_score(
                 resume_skills,
                 job_skills,
             )
-
-            # -------------------------------------------------
-            # TEXT SIMILARITY
-            # -------------------------------------------------
 
             tfidf_score = calculate_similarity(
                 resume_text,
@@ -443,10 +510,6 @@ if st.button("Analyze Resume", type="primary"):
                 job_text,
             )
 
-            # -------------------------------------------------
-            # OVERALL SCORE
-            # -------------------------------------------------
-
             overall_score = calculate_overall_score(
                 weighted_score,
                 semantic_score,
@@ -454,113 +517,153 @@ if st.button("Analyze Resume", type="primary"):
             )
 
             # -------------------------------------------------
-            # SCORE COLOR
-            # -------------------------------------------------
-
-            if overall_score >= 70:
-
-                background = "rgba(34, 197, 94, 0.16)"
-                border = "rgba(34, 197, 94, 0.45)"
-
-            elif overall_score >= 40:
-
-                background = "rgba(234, 179, 8, 0.16)"
-                border = "rgba(234, 179, 8, 0.45)"
-
-            else:
-
-                background = "rgba(239, 68, 68, 0.16)"
-                border = "rgba(239, 68, 68, 0.45)"
-
-            # -------------------------------------------------
-            # OVERALL COMPATIBILITY
-            # -------------------------------------------------
-
-            st.html(
-                f"""
-                <div class="score-box"
-                     style="
-                     background: {background};
-                     border: 1px solid {border};
-                     ">
-                    <div class="score-number">
-                        {overall_score:.1f}%
-                    </div>
-                </div>
-                """
-            )
-
-            # -------------------------------------------------
-            # SKILL MATCH
+            # RESULTS DASHBOARD
             # -------------------------------------------------
 
             st.markdown(
-                '<div class="section-title">Skill Match</div>',
+                '<div class="section-title">Your Match Dashboard</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div class="section-subtitle">A quick breakdown of how your profile compares with this role.</div>',
                 unsafe_allow_html=True,
             )
 
-            col1, col2 = st.columns(2)
+            col1, col2, col3, col4 = st.columns(4, gap="medium")
 
             with col1:
-
                 st.html(
                     f"""
                     <div class="metric-card">
-                        <div class="metric-label">
-                            Basic Skill Match
-                        </div>
-
-                        <div class="metric-number">
-                            {result["match_percentage"]:.1f}%
-                        </div>
+                        <div class="metric-label">Overall Match</div>
+                        <div class="metric-number">{overall_score:.1f}%</div>
                     </div>
                     """
                 )
 
             with col2:
-
                 st.html(
                     f"""
                     <div class="metric-card">
-                        <div class="metric-label">
-                            Weighted Skill Match
-                        </div>
+                        <div class="metric-label">Basic Skill Match</div>
+                        <div class="metric-number">{result["match_percentage"]:.1f}%</div>
+                    </div>
+                    """
+                )
 
-                        <div class="metric-number">
-                            {weighted_score:.1f}%
-                        </div>
+            with col3:
+                st.html(
+                    f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Weighted Skill Match</div>
+                        <div class="metric-number">{weighted_score:.1f}%</div>
+                    </div>
+                    """
+                )
+
+            with col4:
+                st.html(
+                    f"""
+                    <div class="metric-card">
+                        <div class="metric-label">Skills Missing</div>
+                        <div class="metric-number">{len(result["missing"])}</div>
                     </div>
                     """
                 )
 
             # -------------------------------------------------
-            # MATCHED SKILLS
+            # VISUAL SKILL MATCH CHART
             # -------------------------------------------------
 
-            matched_categories = categorize_skills(
-                result["matched"]
+            st.markdown(
+                '<div class="section-title">Skill Match Overview</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div class="section-subtitle">Each required skill is scored as matched or missing based on your resume.</div>',
+                unsafe_allow_html=True,
             )
 
-            if matched_categories:
+            if job_skills:
+                chart_rows = []
+                matched_set = set(result["matched"])
 
-                st.markdown(
-                    '<div class="section-title">Matched Skills</div>',
-                    unsafe_allow_html=True,
+                for skill in job_skills:
+                    chart_rows.append({
+                        "Skill": skill.title(),
+                        "Match": 100 if skill in matched_set else 0,
+                    })
+
+                chart_df = pd.DataFrame(chart_rows).set_index("Skill")
+                st.bar_chart(
+                    chart_df,
+                    y="Match",
+                    height=340,
+                    use_container_width=True,
                 )
+            else:
+                st.info("No specific technical skills were detected in the job description.")
 
-                for category, skills in matched_categories.items():
+            # -------------------------------------------------
+            # MATCHED + MISSING SKILLS
+            # -------------------------------------------------
 
-                    st.html(
-                        f"""
-                        <div class="category-title">
-                            {category}
-                        </div>
+            st.markdown(
+                '<div class="section-title">Your Skill Breakdown</div>',
+                unsafe_allow_html=True,
+            )
 
-                        <div class="skill-text">
-                            {", ".join(skills)}
-                        </div>
-                        """
+            skills_col1, skills_col2 = st.columns(2, gap="large")
+
+            with skills_col1:
+                st.markdown("### ✓ Matched Skills")
+                if result["matched"]:
+                    chips = "".join(
+                        f'<span class="skill-chip matched-chip">{skill.title()}</span>'
+                        for skill in result["matched"]
                     )
+                    st.markdown(
+                        f'<div class="skill-grid">{chips}</div>',
+                        unsafe_allow_html=True,
+                    )
+
+                    matched_categories = categorize_skills(result["matched"])
+                    for category, skills in matched_categories.items():
+                        st.markdown(
+                            f'<div class="category-title">{category}</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(
+                            f'<div class="skill-text">{", ".join(skills)}</div>',
+                            unsafe_allow_html=True,
+                        )
+                else:
+                    st.info("No matching skills were detected.")
+
+            with skills_col2:
+                st.markdown("### ! Missing Skills")
+                if result["missing"]:
+                    chips = "".join(
+                        f'<span class="skill-chip missing-chip">{skill.title()}</span>'
+                        for skill in result["missing"]
+                    )
+                    st.markdown(
+                        f'<div class="skill-grid">{chips}</div>',
+                        unsafe_allow_html=True,
+                    )
+
+                    missing_categories = categorize_skills(result["missing"])
+                    for category, skills in missing_categories.items():
+                        st.markdown(
+                            f'<div class="category-title">{category}</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(
+                            f'<div class="skill-text">{", ".join(skills)}</div>',
+                            unsafe_allow_html=True,
+                        )
+                else:
+                    st.success("You cover all detected required skills.")
 
             # -------------------------------------------------
             # RESUME IMPROVEMENTS
@@ -787,3 +890,49 @@ if st.button("Analyze Resume", type="primary"):
                     st.info(
                         "Detailed AI analysis is currently unavailable."
                     )
+
+            # Save completed analysis in the current Streamlit session.
+            st.session_state.analysis_history.insert(
+                0,
+                {
+                    "score": overall_score,
+                    "job_title": job_title or "Untitled Job",
+                    "timestamp": pd.Timestamp.now().strftime("%d %b %Y, %I:%M %p"),
+                    "matched": len(result["matched"]),
+                    "missing": len(result["missing"]),
+                },
+            )
+
+            # Keep only the 10 most recent analyses.
+            st.session_state.analysis_history = (
+                st.session_state.analysis_history[:10]
+            )
+
+
+# ---------------------------------------------------------
+# ANALYSIS HISTORY
+# ---------------------------------------------------------
+
+st.markdown('<div class="section-title">Analysis History</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="section-subtitle">Your recent SkillSync analyses from this session.</div>',
+    unsafe_allow_html=True,
+)
+
+if st.session_state.analysis_history:
+    for entry in st.session_state.analysis_history:
+        st.markdown(
+            f"""
+            <div class="history-card">
+                <div class="history-score">{entry["score"]:.1f}% — {entry["job_title"]}</div>
+                <div class="history-meta">
+                    {entry["timestamp"]} &nbsp;•&nbsp;
+                    ✓ {entry["matched"]} matched &nbsp;•&nbsp;
+                    ! {entry["missing"]} missing
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+else:
+    st.info("Your completed analyses will appear here.")
